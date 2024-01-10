@@ -7,12 +7,15 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using CsharpAppWithJQuery.Data;
 using CsharpAppWithJQuery.Models;
+using System.Data.OleDb;
 
 namespace CsharpAppWithJQuery.Pages.Customers
 {
     public class DeleteModel : PageModel
     {
         private readonly CsharpAppWithJQuery.Data.CsharpAppWithJQueryContext _context;
+        private readonly string connectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Personal Projects\\CSharpASP.NET-JQuery\\CsharpAppWithJQuery\\LocalDb\\CustomersDb.mdb";
+
 
         public DeleteModel(CsharpAppWithJQuery.Data.CsharpAppWithJQueryContext context)
         {
@@ -29,15 +32,44 @@ namespace CsharpAppWithJQuery.Pages.Customers
                 return NotFound();
             }
 
-            var customer = await _context.Customer.FirstOrDefaultAsync(m => m.Id == id);
+            Customer displayCustomer = new Customer();
 
-            if (customer == null)
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
+            {
+                connection.Open();
+                string query = "SELECT * FROM Customers WHERE CustomerId =" + id;
+                using (OleDbCommand command = new OleDbCommand(query, connection))
+                using (OleDbDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int customerId = Convert.ToInt32(reader["CustomerId"]);
+                        string name = reader["Name"].ToString();
+                        string address = reader["Address"].ToString();
+                        string city = reader["City"].ToString();
+                        string state = reader["State"].ToString();
+                        int zip = Convert.ToInt32(reader["Zip"]);
+
+                        displayCustomer.Id = customerId;
+                        displayCustomer.Name = name;
+                        displayCustomer.Address = address;
+                        displayCustomer.City = city;
+                        displayCustomer.State = state;
+                        displayCustomer.Zip = zip;
+
+                    }
+                }
+            }
+            //var customer = await _context.Customer.FirstOrDefaultAsync(m => m.Id == id);
+
+
+            if (displayCustomer == null)
             {
                 return NotFound();
             }
             else
             {
-                Customer = customer;
+                Customer = displayCustomer;
             }
             return Page();
         }
@@ -49,15 +81,26 @@ namespace CsharpAppWithJQuery.Pages.Customers
                 return NotFound();
             }
 
-            var customer = await _context.Customer.FindAsync(id);
-            if (customer != null)
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
             {
-                Customer = customer;
-                _context.Customer.Remove(Customer);
-                await _context.SaveChangesAsync();
+                connection.Open();
+
+                string query = "DELETE FROM Customers WHERE CustomerId =?";
+
+                using(OleDbCommand command = new OleDbCommand(query,connection))
+                {
+                    command.Parameters.AddWithValue("CustomerId", id);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if(rowsAffected == 0)
+                    {
+                        Console.WriteLine("Could not delete! problem here!");
+                    }
+                }
             }
 
-            return RedirectToPage("./Index");
+                return RedirectToPage("./Index");
         }
     }
 }

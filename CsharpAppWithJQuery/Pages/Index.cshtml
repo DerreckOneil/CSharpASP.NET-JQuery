@@ -4,9 +4,60 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-left">
-    <h1>VB.NET Example with usage of JQuery.</h1>
-    <p>Note this is an example that will have Razor pages. This is what the expectations are</p>
-    <p>- Please create an HTML web site that will support basic CRUD operations to manage the Customers table.  Add support for viewing, adding, editing, and deleting Customers.</p>
-    <p>- The web site should interface, using JQuery / AJAX calls, with a VB.NET ASP.NET WebAPI service to support pulling and updating information from the Customers table.</p>
-</div>
+
+<body>
+    <script src="~/js/angular.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+
+    <div class="text-left">
+        <h1>VB.NET Example with usage of JQuery.</h1>
+        <p>Note this is an example that will have Razor pages. This is what the expectations are</p>
+        <ul>
+            <li>
+                Please create an HTML web site that will support basic CRUD operations to manage the Customers table.  Add support for viewing, adding, editing, and deleting Customers.
+            </li>
+            <li>
+                The web site should interface, using JQuery / AJAX calls, with a VB.NET ASP.NET WebAPI service to support pulling and updating information from the Customers table.
+            </li>
+            <li>
+                The website should interface using AngularJS calls
+            </li>
+        </ul>
+        <br />
+        <strong>Results:</strong>
+        <ul>
+            <li>
+                Project works with a Razor page that does CRUD operations.
+            </li>
+            <li>
+                The Customer table is the main median where the operations are being operated on.
+            </li>
+            <li>
+                Oledb is used for all CRUD operations with a string query to run the command and update the data.
+            </li>
+            <li>
+                JQuery has been integrated on all cshtml scripts regarding all operations using a CDN link.
+            </li>
+            <li>
+                AngularJS has a local min file and has also been integrated on all applicable cshtml scripts. Last step for the next user is to simply create a JS with the reference to the angular.min and create an angular module then take it from there.
+            </li>
+
+        </ul>
+        <strong>What is needed?</strong>
+        <ul>
+            <li>
+                Microsoft Oledb package (should be included in the project)
+            </li>
+            <li>
+                IMPORTANT! Your local machine needs to have Microsoft Access database engine in order to facilitate data transfer!
+                <a href="https://www.microsoft.com/en-us/download/details.aspx?id=54920">Please refer to this link to download</a>
+            </li>
+        </ul>
+
+        <h4>Footnote: This project is also on my gitHub. If you'd like, feel free to track the progress of this project there.</h4>
+
+        <a asp-page="/Customers/Index">Please find the database here!</a>
+    </div>
+
+</body>

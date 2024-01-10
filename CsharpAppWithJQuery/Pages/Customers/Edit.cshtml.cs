@@ -8,12 +8,15 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CsharpAppWithJQuery.Data;
 using CsharpAppWithJQuery.Models;
+using Microsoft.AspNetCore.Identity;
+using System.Data.OleDb;
 
 namespace CsharpAppWithJQuery.Pages.Customers
 {
     public class EditModel : PageModel
     {
         private readonly CsharpAppWithJQuery.Data.CsharpAppWithJQueryContext _context;
+        private readonly string connectionString = "Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\\Personal Projects\\CSharpASP.NET-JQuery\\CsharpAppWithJQuery\\LocalDb\\CustomersDb.mdb";
 
         public EditModel(CsharpAppWithJQuery.Data.CsharpAppWithJQueryContext context)
         {
@@ -25,17 +28,49 @@ namespace CsharpAppWithJQuery.Pages.Customers
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
+            Console.WriteLine("Id: " + id);
             if (id == null)
             {
                 return NotFound();
             }
 
-            var customer =  await _context.Customer.FirstOrDefaultAsync(m => m.Id == id);
-            if (customer == null)
+            Customer displayCustomer = new Customer();
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
+            {
+                connection.Open();
+
+
+                string query = "SELECT * FROM Customers WHERE CustomerId =" + id;
+
+                using (OleDbCommand command = new OleDbCommand(query, connection))
+                using (OleDbDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        int customerId = Convert.ToInt32(reader["CustomerId"]);
+                        string name = reader["Name"].ToString();
+                        string address = reader["Address"].ToString();
+                        string city = reader["City"].ToString();
+                        string state = reader["State"].ToString();
+                        int zip = Convert.ToInt32(reader["Zip"]);
+
+                        displayCustomer.Id = customerId;
+                        displayCustomer.Name = name;
+                        displayCustomer.Address = address;
+                        displayCustomer.City = city;
+                        displayCustomer.State = state;
+                        displayCustomer.Zip = zip;
+
+                    }
+                }
+            }
+
+            if (displayCustomer == null)
             {
                 return NotFound();
             }
-            Customer = customer;
+            else
+                Customer = displayCustomer;
             return Page();
         }
 
@@ -48,25 +83,35 @@ namespace CsharpAppWithJQuery.Pages.Customers
                 return Page();
             }
 
-            _context.Attach(Customer).State = EntityState.Modified;
+            //_context.Attach(Customer).State = EntityState.Modified;
 
-            try
+            Customer updatedCustomer = new Customer();
+            Console.WriteLine("What's the customer ID here? " + Customer.Id); 
+            string updateQuery = "UPDATE Customers SET Name =?, Address =?, City =?, State =?, Zip =? WHERE CustomerId = " + Customer.Id;
+
+            using (OleDbConnection connection = new OleDbConnection(connectionString))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!CustomerExists(Customer.Id))
+                connection.Open();
+
+                using (OleDbCommand updateCommand = new OleDbCommand(updateQuery, connection))
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
+                    Console.WriteLine("new updated data perhaps? " + Customer.Name);
+                    updateCommand.Parameters.AddWithValue("Name", Customer.Name);
+                    updateCommand.Parameters.AddWithValue("Address", Customer.Address);
+                    updateCommand.Parameters.AddWithValue("City", Customer.City);
+                    updateCommand.Parameters.AddWithValue("State", Customer.State);
+                    updateCommand.Parameters.AddWithValue("Zip", Customer.Zip);
+
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+
+                    Console.WriteLine($"Affected rows: {rowsAffected}");
                 }
             }
 
-            return RedirectToPage("./Index");
+                
+
+                return RedirectToPage("./Index");
         }
 
         private bool CustomerExists(int id)

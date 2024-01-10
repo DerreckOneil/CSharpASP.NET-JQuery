@@ -20,6 +20,9 @@ namespace CsharpAppWithJQuery.Pages.Customers
         {
             _context = context;
         }
+        public IList<Customer> Customer { get; set; } = new List<Customer>();
+
+
         public void OnGet()
         {
 
@@ -27,24 +30,39 @@ namespace CsharpAppWithJQuery.Pages.Customers
             {
                 connection.Open();
 
-                string query = "SELECT TOP 1 Name FROM Customers";
+                string query = "SELECT * FROM Customers";
+
+                int customerIndex = 0;
                 using (OleDbCommand command = new OleDbCommand(query, connection))
                 using (OleDbDataReader reader = command.ExecuteReader())
                 {
-                    if (reader.Read())
+                    while (reader.Read())
                     {
-                        string columnVal = reader["Name"].ToString();
-                        Console.WriteLine("database first element " + columnVal);
+                        Customer customer = new Customer();
+                        int customerId = int.Parse(reader[0].ToString());
+                        string name = reader[1].ToString();
+                        string address = reader[2].ToString();
+                        string city = reader[3].ToString();
+                        string state = reader[4].ToString();
+                        int zip = int.Parse(reader[5].ToString());
+
+                        customer.Id = customerId;
+                        customer.Name = name;
+                        customer.Address = address;
+                        customer.City = city;
+                        customer.State = state;
+                        customer.Zip = zip; 
+
+                        Customer.Add(customer);
+
+                        customerIndex++;
                     }
-                    else
-                    {
-                        Console.WriteLine("No data found in the table");
-                    }
+
+                    Console.WriteLine("No data found in the table");
 
                 }
             }
         }
-        public IList<Customer> Customer { get;set; } = default!;
         /*
         public async Task OnGetAsync()
         {
